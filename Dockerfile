@@ -49,12 +49,6 @@ RUN mkdir -p storage/logs bootstrap/cache \
 # Clear and cache config
 RUN php artisan config:clear && php artisan config:cache
 
-# Run Laravel migrations
-RUN php artisan migrate --force
-
-# Install Node dependencies and build assets
-RUN npm install && npm run build
-
 # Copy Nginx configuration
 COPY ./nginx.conf /etc/nginx/sites-available/default
 
@@ -70,8 +64,12 @@ RUN echo "[program:loan_reminder]\ncommand=php /var/www/html/artisan loan:remind
     && chown www-data:www-data /var/www/html/storage/logs/loan_reminder_err.log \
     && chmod 664 /var/www/html/storage/logs/loan_reminder*.log
 
+# Copy entrypoint script and make it executable
+COPY docker-entrypoint.sh /var/www/html/docker-entrypoint.sh
+RUN chmod +x /var/www/html/docker-entrypoint.sh
+
 # Expose HTTP port (Nginx)
 EXPOSE 80
 
-# Start Supervisor (this runs Nginx + PHP-FPM + Laravel worker)
-CMD ["/usr/bin/supervisord", "-c", "/etc/supervisor/conf.d/supervisord.conf"]
+# Use entrypoint script to run migrations and start Supervisor
+CMD ["/var/www/html/docker-entrypoint.sh"]
