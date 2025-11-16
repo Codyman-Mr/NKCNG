@@ -28,17 +28,17 @@ RUN docker-php-ext-install pdo_mysql mbstring exif pcntl bcmath pdo_pgsql pgsql 
 
 # Install Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
-# Run Laravel migrations
-RUN php artisan migrate --force
 
-
-# Copy project files
+# Copy project files first
 COPY . .
 
 # Copy .env file explicitly
 COPY .env .env
 
-# Set correct permissions early
+# Install PHP dependencies
+RUN COMPOSER_ALLOW_SUPERUSER=1 composer install --no-dev --optimize-autoloader --ignore-platform-reqs
+
+# Set correct permissions
 RUN mkdir -p storage/logs bootstrap/cache \
     && chown -R www-data:www-data /var/www/html \
     && chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache \
@@ -46,11 +46,11 @@ RUN mkdir -p storage/logs bootstrap/cache \
     && chown www-data:www-data storage/logs/laravel.log \
     && chmod 664 storage/logs/laravel.log
 
-# Install PHP dependencies
-RUN COMPOSER_ALLOW_SUPERUSER=1 composer install --no-dev --optimize-autoloader --ignore-platform-reqs
-
 # Clear and cache config
 RUN php artisan config:clear && php artisan config:cache
+
+# Run Laravel migrations
+RUN php artisan migrate --force
 
 # Install Node dependencies and build assets
 RUN npm install && npm run build
