@@ -32,8 +32,12 @@ COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 # Copy project files
 COPY . .
 
-# Copy .env file explicitly (important)
+# Copy .env file explicitly
 COPY .env .env
+
+# Set correct permissions early
+RUN chown -R www-data:www-data /var/www/html \
+    && chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache
 
 # Install PHP dependencies
 RUN COMPOSER_ALLOW_SUPERUSER=1 composer install --no-dev --optimize-autoloader --ignore-platform-reqs
@@ -43,10 +47,6 @@ RUN php artisan config:clear && php artisan config:cache
 
 # Install Node dependencies and build assets
 RUN npm install && npm run build
-
-# Set correct permissions
-RUN chown -R www-data:www-data /var/www/html \
-    && chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache
 
 # Copy Nginx configuration
 COPY ./nginx.conf /etc/nginx/sites-available/default
