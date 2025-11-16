@@ -3,14 +3,18 @@ set -e
 
 echo "Starting Laravel container..."
 
-# Run Laravel migrations
+# Run migrations (automatic)
 echo "Running Laravel migrations..."
-php artisan migrate --force || echo "Migration failed, continuing..."
+php artisan migrate --force
 
-# Clear & cache config
+# Clear and cache config
+echo "Clearing and caching config..."
 php artisan config:clear
 php artisan config:cache
 
-# Start Supervisor (long-running processes)
+# Optional: run other artisan commands if needed
+# php artisan db:seed --force
+
+# Start Supervisor (Nginx + PHP-FPM + Laravel workers)
 echo "Starting Supervisor..."
 exec /usr/bin/supervisord -c /etc/supervisor/conf.d/supervisord.conf
