@@ -8,4 +8,6 @@
 
 /.github export-ignore
 CHANGELOG.md export-ignore
+docker-entrypoint.sh text eol=lf
+
 .styleci.yml export-ignore
