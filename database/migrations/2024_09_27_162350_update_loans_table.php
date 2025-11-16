@@ -11,7 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
-        // No changes made, just to refresh schema
+        Schema::table('loans', function (Blueprint $table) {
+            $table->string('applicant_name')->nullable()->after('id');
+        });
     }
 
     /**
@@ -19,6 +21,8 @@ return new class extends Migration
      */
     public function down(): void
     {
-        // No rollback needed
+        Schema::table('loans', function (Blueprint $table) {
+            $table->dropColumn('applicant_name');
+        });
     }
 };
