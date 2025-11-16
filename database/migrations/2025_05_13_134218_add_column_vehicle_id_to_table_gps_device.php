@@ -1,29 +1,27 @@
-<?php
-
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\DB;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
     public function up(): void
     {
+        // Kwa PostgreSQL, tunongeza column kwanza kama nullable integer/bigint
+        DB::statement('ALTER TABLE gps_devices ADD COLUMN vehicle_id bigint NULL');
+
+        // Kisha tunongeza foreign key
         Schema::table('gps_devices', function (Blueprint $table) {
-            $table->foreignId('vehicle_id')->nullable()->after('device_id')->constrained('customer_vehicles')->onDelete('set null');
+            $table->foreign('vehicle_id')->references('id')->on('customer_vehicles')->onDelete('set null');
         });
     }
 
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
         Schema::table('gps_devices', function (Blueprint $table) {
             $table->dropForeign(['vehicle_id']);
-            $table->dropColumn('vehicle_id');
         });
+
+        DB::statement('ALTER TABLE gps_devices DROP COLUMN vehicle_id');
     }
 };
