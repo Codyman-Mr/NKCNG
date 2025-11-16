@@ -3,18 +3,15 @@ set -e
 
 echo "Starting Laravel container..."
 
-# Run migrations (automatic)
+# Run Laravel migrations with catch for PostgreSQL bigint issue
 echo "Running Laravel migrations..."
-php artisan migrate --force
+php artisan migrate --force || echo "Some migrations failed, check device_id column for PostgreSQL bigint cast"
 
-# Clear and cache config
+# Optional: clear & cache config
 echo "Clearing and caching config..."
 php artisan config:clear
 php artisan config:cache
 
-# Optional: run other artisan commands if needed
-# php artisan db:seed --force
-
-# Start Supervisor (Nginx + PHP-FPM + Laravel workers)
+# Start Supervisor
 echo "Starting Supervisor..."
 exec /usr/bin/supervisord -c /etc/supervisor/conf.d/supervisord.conf
