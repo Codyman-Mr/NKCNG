@@ -29,10 +29,10 @@ RUN docker-php-ext-install pdo_mysql mbstring exif pcntl bcmath pdo_pgsql pgsql 
 # Install Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
-# Copy project files first
+# Copy project files
 COPY . .
 
-# Copy .env file explicitly
+# Copy .env explicitly
 COPY .env .env
 
 # Install PHP dependencies
@@ -45,9 +45,6 @@ RUN mkdir -p storage/logs bootstrap/cache \
     && touch storage/logs/laravel.log \
     && chown www-data:www-data storage/logs/laravel.log \
     && chmod 664 storage/logs/laravel.log
-
-# Clear and cache config
-RUN php artisan config:clear && php artisan config:cache
 
 # Copy Nginx configuration
 COPY ./nginx.conf /etc/nginx/sites-available/default
@@ -64,12 +61,12 @@ RUN echo "[program:loan_reminder]\ncommand=php /var/www/html/artisan loan:remind
     && chown www-data:www-data /var/www/html/storage/logs/loan_reminder_err.log \
     && chmod 664 /var/www/html/storage/logs/loan_reminder*.log
 
-# Copy entrypoint script and make it executable
+# Copy entrypoint script
 COPY docker-entrypoint.sh /var/www/html/docker-entrypoint.sh
 RUN chmod +x /var/www/html/docker-entrypoint.sh
 
-# Expose HTTP port (Nginx)
+# Expose HTTP port
 EXPOSE 80
 
-# Use entrypoint script to run migrations and start Supervisor
+# Use entrypoint script
 CMD ["/var/www/html/docker-entrypoint.sh"]
