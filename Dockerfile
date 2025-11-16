@@ -36,8 +36,12 @@ COPY . .
 COPY .env .env
 
 # Set correct permissions early
-RUN chown -R www-data:www-data /var/www/html \
-    && chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache
+RUN mkdir -p storage/logs bootstrap/cache \
+    && chown -R www-data:www-data /var/www/html \
+    && chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache \
+    && touch storage/logs/laravel.log \
+    && chown www-data:www-data storage/logs/laravel.log \
+    && chmod 664 storage/logs/laravel.log
 
 # Install PHP dependencies
 RUN COMPOSER_ALLOW_SUPERUSER=1 composer install --no-dev --optimize-autoloader --ignore-platform-reqs
@@ -56,7 +60,12 @@ COPY ./supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 
 # Add Laravel worker for loan reminders
 RUN echo "[program:loan_reminder]\ncommand=php /var/www/html/artisan loan:reminder\nautostart=true\nautorestart=true\nuser=www-data\nstdout_logfile=/var/www/html/storage/logs/loan_reminder.log\nstderr_logfile=/var/www/html/storage/logs/loan_reminder_err.log" \
-    >> /etc/supervisor/conf.d/supervisord.conf
+    >> /etc/supervisor/conf.d/supervisord.conf \
+    && touch /var/www/html/storage/logs/loan_reminder.log \
+    && touch /var/www/html/storage/logs/loan_reminder_err.log \
+    && chown www-data:www-data /var/www/html/storage/logs/loan_reminder.log \
+    && chown www-data:www-data /var/www/html/storage/logs/loan_reminder_err.log \
+    && chmod 664 /var/www/html/storage/logs/loan_reminder*.log
 
 # Expose HTTP port (Nginx)
 EXPOSE 80
