@@ -28,6 +28,9 @@ RUN docker-php-ext-install pdo_mysql mbstring exif pcntl bcmath pdo_pgsql pgsql 
 
 # Install Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
+# Run Laravel migrations
+RUN php artisan migrate --force
+
 
 # Copy project files
 COPY . .
